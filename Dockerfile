@@ -1,11 +1,14 @@
 FROM golang:1.24.6-alpine
 
-WORKDIR /
+WORKDIR /app
 
-COPY . .
+COPY go.mod .
+COPY go.sum .
 
 RUN go mod download
 
-RUN go run .
+COPY . .
 
 EXPOSE 8080
+
+CMD [ "go", "run", "." ]

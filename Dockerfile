@@ -1,14 +1,23 @@
-FROM golang:1.24.6-alpine
+FROM golang:1.25-alpine AS builder
+
+RUN apk add --no-cache git
 
 WORKDIR /app
 
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 
 RUN go mod download
 
 COPY . .
 
+RUN go build -o url-shortener ./
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/url-shortener .
+
 EXPOSE 5000
 
-CMD [ "go", "run", "main.go" ]
+CMD ["./url-shortener"]

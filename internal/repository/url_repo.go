@@ -32,7 +32,7 @@ func (r *URLRepository) Insert(ctx context.Context, shortURL models.ShortURL) er
 func (r *URLRepository) Update(ctx context.Context, shortURL models.ShortURL) error {
 	_, err := r.collection.UpdateOne(ctx, map[string]any{"shortCode": shortURL.ShortCode}, map[string]any{
 		"$set": map[string]any{
-			"url":          shortURL.URL,
+			"url":         shortURL.URL,
 			"updatedAt":   shortURL.UpdatedAt,
 			"accessCount": shortURL.AccessCount,
 		},
@@ -54,4 +54,9 @@ func (r *URLRepository) FindByShortCode(ctx context.Context, shortCode string) (
 	}
 
 	return &url, nil
+}
+
+func (r *URLRepository) DeleteByShortCode(ctx context.Context, shortCode string) error {
+	_, err := r.collection.DeleteOne(ctx, map[string]any{"shortCode": shortCode})
+	return err
 }

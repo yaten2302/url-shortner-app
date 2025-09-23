@@ -58,3 +58,22 @@ func (h *URLHandler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"url": originalURL})
 }
+
+func (h *URLHandler) DeleteURL(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ShortCode string `json:"short_code"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.ShortCode == "" {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	err := h.service.DeleteURL(r.Context(), req.ShortCode)
+	if err != nil {
+		http.Error(w, "Failed to delete short URL", http.StatusInternalServerError)
+		log.Printf("DeleteShortURL error: %v", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

@@ -57,3 +57,7 @@ func (s *URLService) GetOriginalURL(ctx context.Context, shortCode string) (stri
 
 	return url.URL, nil
 }
+
+func (s *URLService) DeleteURL(ctx context.Context, shortCode string) error {
+	return s.repo.DeleteByShortCode(ctx, shortCode)
+}

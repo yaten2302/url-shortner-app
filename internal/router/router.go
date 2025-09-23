@@ -12,6 +12,7 @@ func NewRouter(urlHandler *handlers.URLHandler) *chi.Mux {
 	// Routes
 	r.Post("/shorten", urlHandler.CreateShortURL)
 	r.Get("/fetchOriginalURL", urlHandler.GetOriginalURL)
+	r.Delete("/deleteURL", urlHandler.DeleteURL)
 
 	return r
 }

@@ -7,26 +7,16 @@ import (
 	"os"
 
 	"url-shortner-app/internal/db"
-	"url-shortner-app/internal/handlers"
-	"url-shortner-app/internal/repository"
 	"url-shortner-app/internal/router"
-	"url-shortner-app/internal/services"
 )
 
 func main() {
 	// Connect to DB
-	DB := db.Connect()
+	_ = db.Connect()
 	defer db.Disconnect()
 
-	// Get URLs collection
-	collection := DB.Collection("urls")
-
-	urlRepo := repository.NewURLRepository(collection)
-	urlService := services.NewURLService(urlRepo)
-	urlHandler := handlers.NewURLHandler(urlService)
-
 	// Setup router
-	r := router.NewRouter(urlHandler)
+	r := router.NewRouter()
 
 	port := os.Getenv("PORT")
 	if port == "" {

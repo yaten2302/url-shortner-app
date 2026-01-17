@@ -2,10 +2,12 @@ module url-shortner-app
 
 go 1.24.3
 
+require github.com/joho/godotenv v1.5.1
+
 require (
 	github.com/go-chi/chi/v5 v5.2.3 // indirect
+	github.com/go-chi/cors v1.2.2 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
-	github.com/joho/godotenv v1.5.1
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect

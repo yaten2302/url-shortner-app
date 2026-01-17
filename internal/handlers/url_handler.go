@@ -4,28 +4,17 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
-	"url-shortner-app/internal/services"
+	"url-shortner-app/internal/repository"
 )
 
-type URLHandler struct {
-	service *services.URLService
-}
-
-func NewURLHandler(service *services.URLService) *URLHandler {
-	return &URLHandler{service: service}
-}
-
-func (h *URLHandler) CreateShortURL(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		URL string `json:"url"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.URL == "" {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+func CreateShortURL(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Path[len("/shorten/"):]
+	if url == "" {
+		http.Error(w, "URL parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	shortURL, err := h.service.CreateShortURL(r.Context(), req.URL)
+	shortURL, err := repository.CreateShortURL(r.Context(), url)
 	if err != nil {
 		http.Error(w, "Failed to create short URL", http.StatusInternalServerError)
 		log.Printf("CreateShortURL error: %v", err)
@@ -36,39 +25,35 @@ func (h *URLHandler) CreateShortURL(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(shortURL)
 }
 
-func (h *URLHandler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		ShortCode string `json:"short_code"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.ShortCode == "" {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+func GetOriginalURL(w http.ResponseWriter, r *http.Request) {
+	shortCode := r.URL.Path[len("/fetchOriginalURL/"):]
+	if shortCode == "" {
+		http.Error(w, "Short code parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	originalURL, err := h.service.GetOriginalURL(r.Context(), req.ShortCode)
+	originalURL, err := repository.FindByShortCode(r.Context(), shortCode)
 	if err != nil {
 		http.Error(w, "Failed to fetch original URL", http.StatusInternalServerError)
 		return
 	}
-	if originalURL == "" {
+	if originalURL == nil {
 		http.Error(w, "Short code not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"url": originalURL})
+	json.NewEncoder(w).Encode(map[string]string{"url": originalURL.URL})
 }
 
-func (h *URLHandler) DeleteURL(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		ShortCode string `json:"short_code"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.ShortCode == "" {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+func DeleteURL(w http.ResponseWriter, r *http.Request) {
+	shortCode := r.URL.Path[len("/deleteURL/"):]
+	if shortCode == "" {
+		http.Error(w, "Short code parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	err := h.service.DeleteURL(r.Context(), req.ShortCode)
+	err := repository.DeleteByShortCode(r.Context(), shortCode)
 	if err != nil {
 		http.Error(w, "Failed to delete short URL", http.StatusInternalServerError)
 		log.Printf("DeleteShortURL error: %v", err)
